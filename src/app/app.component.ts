@@ -1,44 +1,43 @@
 import { Component } from '@angular/core';
+import { NgUploaderOptions } from 'ngx-uploader';
+
 // https://embed.plnkr.co/ozZqbxIorjQW15BrDFrg/
+// converted to https://github.com/jkuri/ngx-uploader
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  filesToUpload: Array<File>;
-  title = 'app works!';
 
-    upload() {
-        this.makeFileRequest("http://localhost:3000/api/upload/file", [], this.filesToUpload).then((result) => {
-            console.log(result);
-        }, (error) => {
-            console.error(error);
-        });
+
+  uploadFile: any;
+  hasBaseDropZoneOver: boolean = false;
+  options: NgUploaderOptions = {
+    url: 'http://localhost:3000/api/upload/file',
+    filterExtensions: true,
+    allowedExtensions: ['zip'],
+    // authToken: 'asd123b123zxc08234cxcv',
+    // authTokenPrefix: 'Bearer',
+  };
+  sizeLimit = 3000000;
+
+  handleUpload(data): void {
+    if (data && data.response) {
+      // data = JSON.parse(data.response);
+      this.uploadFile = data.response;
     }
- 
-    fileChangeEvent(fileInput: any){
-        this.filesToUpload = <Array<File>> fileInput.target.files;
+  }
+
+  fileOverBase(e: any): void {
+    this.hasBaseDropZoneOver = e;
+  }
+
+  beforeUpload(uploadingFile): void {
+    if (uploadingFile.size > this.sizeLimit) {
+      uploadingFile.setAbort();
+      alert('File is too large');
     }
- 
-    makeFileRequest(url: string, params: Array<string>, files: Array<File>) {
-        return new Promise((resolve, reject) => {
-            var formData: any = new FormData();
-            var xhr = new XMLHttpRequest();
-            for(var i = 0; i < files.length; i++) {
-                formData.append("file", files[i], files[i].name);
-            }
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4) {
-                    if (xhr.status == 200) {
-                        resolve(JSON.parse(xhr.response));
-                    } else {
-                        reject(xhr.response);
-                    }
-                }
-            }
-            xhr.open("POST", url, true);
-            xhr.send(formData);
-        });
-    }
+  }
 }
