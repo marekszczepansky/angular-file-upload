@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { NgUploaderOptions } from 'ngx-uploader';
 
 // https://embed.plnkr.co/ozZqbxIorjQW15BrDFrg/
@@ -9,25 +9,34 @@ import { NgUploaderOptions } from 'ngx-uploader';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
+  constructor(){};
 
+  private zone: NgZone;
   uploadFile: any;
+  options: NgUploaderOptions;
   hasBaseDropZoneOver: boolean = false;
-  options: NgUploaderOptions = {
-    url: 'http://localhost:3000/api/upload/file',
-    filterExtensions: true,
-    allowedExtensions: ['zip'],
-    // authToken: 'asd123b123zxc08234cxcv',
-    // authTokenPrefix: 'Bearer',
-  };
-  sizeLimit = 3000000;
-
+  ngOnInit() {
+    this.options = new NgUploaderOptions({
+      url: 'http://localhost:3000/api/upload/file',
+      filterExtensions: true,
+      allowedExtensions: ['zip'],
+      autoUpload: true,
+    });
+    this.zone = new NgZone({ enableLongStackTrace: false });
+  }
   handleUpload(data): void {
-    if (data && data.response) {
-      // data = JSON.parse(data.response);
-      this.uploadFile = data.response;
-    }
+    this.zone.run(() => {
+      if (data && data.response) {
+        // data = JSON.parse(data.response);
+        this.uploadFile = data.response;
+        console.log(this.uploadFile);
+      } else {
+        console.log('progress object', data && data.progress);
+        this.uploadFile = data.progress.percent;
+      }
+    });
   }
 
   fileOverBase(e: any): void {
@@ -35,7 +44,8 @@ export class AppComponent {
   }
 
   beforeUpload(uploadingFile): void {
-    if (uploadingFile.size > this.sizeLimit) {
+    console.log('before upload', uploadingFile);
+    if (uploadingFile.size > 300000000) {
       uploadingFile.setAbort();
       alert('File is too large');
     }

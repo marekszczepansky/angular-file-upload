@@ -9,14 +9,23 @@
 <!-- drag & drop file example-->
 <style>
   .file-over { border: dotted 3px red; } /* Default class applied to drop zones on over */
-  [ngFileDrop] { height: 200px; background-color: green}
 </style>
-<div ngFileDrop
+<div ngFileDrop class="file-drop-area"
      [options]="options"
      (onUpload)="handleUpload($event)"
      [ngClass]="{'file-over': hasBaseDropZoneOver}"
      (onFileOver)="fileOverBase($event)"
      (beforeUpload)="beforeUpload($event)">
+     <h1>DROP YOUR FILE OR FOLDER HERE</h1>
+     <label class="upload-button">
+        <input class="hidden" 
+        ngFileSelect
+        [options]="options"
+        (onUpload)="handleUpload($event)"
+        (beforeUpload)="beforeUpload($event)"
+        type="file">
+        Browse
+    </label>
 </div>
 
 <div>
